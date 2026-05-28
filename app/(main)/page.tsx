@@ -1,0 +1,9 @@
+import { redirect } from "next/navigation";
+import { getSession } from "@/lib/auth";
+import MainPageClient from "@/components/MainPageClient";
+
+export default async function MainPage() {
+  const session = await getSession();
+  if (!session) redirect("/login");
+  return <MainPageClient />;
+}
