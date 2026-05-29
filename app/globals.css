@@ -1,0 +1,38 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-primary: #DC2626;
+  --color-primary-hover: #B91C1C;
+  --color-bg: #F5F5F5;
+  --color-surface: #FFFFFF;
+  --color-border: #E5E7EB;
+  --color-text: #111111;
+  --color-muted: #6B7280;
+  --color-badge-open-bg: #FEF9C3;
+  --color-badge-open-text: #92400E;
+  --color-badge-escalated-bg: #FEE2E2;
+  --color-badge-escalated-text: #991B1B;
+  --color-badge-resolved-bg: #DCFCE7;
+  --color-badge-resolved-text: #166534;
+}
+
+:root {
+  --font-sans: "Inter", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: #F5F5F5;
+  color: #111111;
+  min-height: 100vh;
+}
+
+html,
+body,
+#__next {
+  height: 100%;
+}
