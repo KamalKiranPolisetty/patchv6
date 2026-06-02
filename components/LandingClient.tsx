@@ -372,8 +372,6 @@ export default function LandingClient() {
     setSending(false);
     setIncident(null);
     setIsReadOnly(false);
-    setFeedbackSent(false);
-    setSelectedFeedback(null);
     setCountForm({
       active: false,
       countPrompt: "",

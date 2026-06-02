@@ -66,36 +66,38 @@ export async function POST(req: NextRequest) {
       : undefined,
   };
 
+  const nextStatus = llmResult.should_escalate
+    ? "Escalated"
+    : llmResult.should_resolve
+    ? "Resolved"
+    : "Open";
+
+  const setFields: Record<string, unknown> = {
+    status: nextStatus,
+    lastUpdatedBy: "Patch",
+  };
+
+  if (llmResult.should_escalate) {
+    setFields.escalationDetails = llmResult.escalation_data ?? {};
+  } else if (llmResult.should_resolve) {
+    setFields.resolutionDetails = { resolvedAt: new Date(), summary: llmResult.response };
+  }
+
   const update: Record<string, unknown> = {
     $push: { history: { $each: [userMsg, assistantMsg] } },
     $setOnInsert: {
       incidentId: newIncidentId,
       sessionId,
       userId: session.userId,
-      status: "Open",
       category: category ?? "",
-      lastUpdatedBy: "Patch",
     },
+    $set: setFields,
   };
-
-  if (llmResult.should_escalate) {
-    update.$set = {
-      status: "Escalated",
-      escalationDetails: llmResult.escalation_data ?? {},
-      lastUpdatedBy: "Patch",
-    };
-  } else if (llmResult.should_resolve) {
-    update.$set = {
-      status: "Resolved",
-      resolutionDetails: { resolvedAt: new Date(), summary: llmResult.response },
-      lastUpdatedBy: "Patch",
-    };
-  }
 
   await Transaction.findOneAndUpdate(
     { incidentId: newIncidentId },
     update,
-    { upsert: true, new: true }
+    { upsert: true, returnDocument: "after" }
   );
 
   return NextResponse.json({
