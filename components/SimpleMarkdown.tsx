@@ -4,6 +4,9 @@ interface Props {
   content: string;
 }
 
+// Matches ![alt](filename) — filename only (no slashes), maps to KB images API
+const IMAGE_RE = /!\[([^\]]*)\]\(([^/)\s]+\.[a-zA-Z]{2,5})\)/g;
+
 export default function SimpleMarkdown({ content }: Props) {
   const lines = content.split("\n");
   const elements: React.ReactNode[] = [];
@@ -40,6 +43,28 @@ export default function SimpleMarkdown({ content }: Props) {
         <h4 key={i} className="text-sm font-medium text-gray-800 mt-2 mb-0.5">
           {inlineMarkdown(line.slice(4))}
         </h4>
+      );
+      i++;
+      continue;
+    }
+
+    // Standalone image line: ![alt](filename.ext)
+    const standaloneImg = line.trim().match(/^!\[([^\]]*)\]\(([^/)\s]+\.[a-zA-Z]{2,5})\)$/);
+    if (standaloneImg) {
+      const [, alt, filename] = standaloneImg;
+      elements.push(
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          key={i}
+          src={`/api/kb/images/${encodeURIComponent(filename)}`}
+          alt={alt}
+          className="max-w-full rounded-lg my-2"
+          onError={(e) => {
+            console.error(`[SimpleMarkdown] Missing KB image: ${filename}`);
+            (e.target as HTMLImageElement).style.display = "none";
+          }}
+          data-testid={`kb-image-${filename}`}
+        />
       );
       i++;
       continue;
@@ -89,7 +114,7 @@ export default function SimpleMarkdown({ content }: Props) {
       continue;
     }
 
-    // Normal paragraph line
+    // Normal paragraph line (may contain inline images)
     elements.push(
       <p key={i} className="text-sm text-gray-800 leading-relaxed">
         {inlineMarkdown(line)}
@@ -102,9 +127,28 @@ export default function SimpleMarkdown({ content }: Props) {
 }
 
 function inlineMarkdown(text: string): React.ReactNode {
-  // Handle **bold** and *italic*
-  const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g);
+  // Split on inline images, bold, and italic
+  const parts = text.split(/(!\[[^\]]*\]\([^/)\s]+\.[a-zA-Z]{2,5}\)|\*\*[^*]+\*\*|\*[^*]+\*)/g);
   return parts.map((part, i) => {
+    // Inline image: ![alt](filename.ext) — filename only
+    const imgMatch = part.match(/^!\[([^\]]*)\]\(([^/)\s]+\.[a-zA-Z]{2,5})\)$/);
+    if (imgMatch) {
+      const [, alt, filename] = imgMatch;
+      return (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          key={i}
+          src={`/api/kb/images/${encodeURIComponent(filename)}`}
+          alt={alt}
+          className="max-w-full rounded-lg my-1 inline-block"
+          onError={(e) => {
+            console.error(`[SimpleMarkdown] Missing KB image: ${filename}`);
+            (e.target as HTMLImageElement).style.display = "none";
+          }}
+          data-testid={`kb-inline-image-${filename}`}
+        />
+      );
+    }
     if (part.startsWith("**") && part.endsWith("**")) {
       return <strong key={i} className="font-semibold text-gray-900">{part.slice(2, -2)}</strong>;
     }
@@ -114,3 +158,6 @@ function inlineMarkdown(text: string): React.ReactNode {
     return part;
   });
 }
+
+// Export the regex so it can be referenced externally if needed
+export { IMAGE_RE };

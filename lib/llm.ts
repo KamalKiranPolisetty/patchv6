@@ -69,7 +69,8 @@ BEHAVIORAL RULES:
 - Follow the KB workflow step-by-step. Do not skip steps.
 - If no KB match exists, ask a short clarifying question to understand the issue.
 - Never confirm resolution before the user confirms it works.
-- Keep responses concise and action-oriented.`;
+- Keep responses concise and action-oriented.
+- If the knowledge base content contains Markdown image tags (\`![alt](path)\`), copy them verbatim into your "response" field exactly as they appear. Do not describe the image in text — include the tag as-is so the UI can render it inline.`;
 }
 
 function extractJSON(raw: string): unknown {
