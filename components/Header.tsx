@@ -54,8 +54,7 @@ export default function Header() {
   }
 
   function handleNewChat() {
-    router.push("/");
-    router.refresh();
+    router.push(`/?newChat=${Date.now()}`);
   }
 
   return (

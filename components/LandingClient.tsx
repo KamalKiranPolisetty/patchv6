@@ -79,6 +79,7 @@ const STATUS_STYLES: Record<string, string> = {
 
 export default function LandingClient() {
   const searchParams = useSearchParams();
+  const newChatToken = searchParams.get("newChat");
 
   const [user, setUser] = useState<SessionUser | null>(null);
   const [kbStatus, setKBStatus] = useState<KBStatus>("loading");
@@ -104,6 +105,27 @@ export default function LandingClient() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const hasResumed = useRef(false);
 
+  function resetChatState() {
+    hasResumed.current = false;
+    setChatStarted(false);
+    setMessages([]);
+    setInput("");
+    setSending(false);
+    setIncident(null);
+    setIsReadOnly(false);
+    setFeedbackSent(false);
+    setSelectedFeedback(null);
+    setCountForm({
+      active: false,
+      countPrompt: "",
+      totalCards: 0,
+      cardFields: {},
+      inputCardVariables: {},
+    });
+    setSelectListMsgIdx(null);
+    setSelectValue("");
+  }
+
   // ─── Load user + KB status ──────────────────────────────────────────────────
 
   useEffect(() => {
@@ -119,6 +141,11 @@ export default function LandingClient() {
       })
       .catch(() => setKBStatus("missing"));
   }, []);
+
+  useEffect(() => {
+    if (!newChatToken) return;
+    resetChatState();
+  }, [newChatToken]);
 
   // ─── Auto-scroll ────────────────────────────────────────────────────────────
 
