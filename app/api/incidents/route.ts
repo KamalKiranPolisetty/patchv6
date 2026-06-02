@@ -10,7 +10,7 @@ export async function GET() {
   await connectDB();
   const incidents = await Transaction.find({ userId: session.userId })
     .sort({ createdAt: -1 })
-    .select("incidentId status category createdAt updatedAt escalationDetails resolutionDetails")
+    .select("incidentId status category createdAt updatedAt escalationDetails resolutionDetails feedback")
     .lean();
 
   return NextResponse.json({ incidents });
