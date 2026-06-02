@@ -7,7 +7,7 @@ Patch is an AI-powered self-service IT support agent for Discount Tire store ass
 - **Authentication** — Signup/login with bcrypt-hashed passwords and JWT session cookies
 - **Main Landing Page** — Welcome screen with VDI category tile and KB availability badge
 - **Persistent Header** — Navigation with incident count badge, New Chat, and Logout
-- **AI Chat** — Anthropic Claude-powered troubleshooting grounded in your KB markdown files
+- **AI Chat** — Ollama-powered troubleshooting grounded in your KB markdown files
 - **Incident Tracking** — MongoDB persistence for every session with lifecycle status (Open → Resolved/Escalated)
 - **Knowledge Base Retrieval** — Runtime reading of `knowledge_base/workflows/*.md` files
 
@@ -33,7 +33,7 @@ Required variables:
 |---|---|
 | `MONGODB_URI` | MongoDB connection string |
 | `JWT_SECRET` | Long random string for JWT signing |
-| `ANTHROPIC_API_KEY` | Your Anthropic API key |
+| `OLLAMA_BASE_URL` | Base URL for your Ollama server |
 
 ### 3. Add Knowledge Base content
 
@@ -79,7 +79,7 @@ lib/
   auth.ts               — JWT session helpers
   mongodb.ts            — Mongoose connection
   kb.ts                 — Knowledge base retrieval
-  llm.ts                — Anthropic LLM integration + JSON parsing
+  llm.ts                — Ollama LLM integration + JSON parsing
   models/
     user.ts             — Users collection schema
     transaction.ts      — Patch Transactions collection schema

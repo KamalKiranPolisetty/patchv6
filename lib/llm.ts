@@ -1,6 +1,4 @@
-import Anthropic from "@anthropic-ai/sdk";
-
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const OLLAMA_MODEL = "gemma4:31b-cloud";
 
 export interface LLMResponse {
   response: string;
@@ -148,31 +146,54 @@ export async function callLLM(
   kbContext: string
 ): Promise<LLMResponse> {
   const systemPrompt = buildSystemPrompt(kbContext);
+  const baseUrl = process.env.OLLAMA_BASE_URL?.trim();
 
-  const messages: Anthropic.MessageParam[] = [
+  if (!baseUrl) {
+    throw new Error("OLLAMA_BASE_URL is not configured.");
+  }
+
+  const messages = [
+    { role: "system", content: systemPrompt },
     ...history.map((m) => ({
-      role: m.role as "user" | "assistant",
+      role: m.role,
       content: m.content,
     })),
-    { role: "user" as const, content: userMessage },
+    { role: "user", content: userMessage },
   ];
 
-  const completion = await client.messages.create({
-    model: process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-6",
-    max_tokens: 1024,
-    system: systemPrompt,
-    messages,
+  const response = await fetch(`${baseUrl.replace(/\/$/, "")}/api/chat`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: OLLAMA_MODEL,
+      stream: false,
+      options: {
+        num_predict: 1024,
+      },
+      messages,
+    }),
   });
 
-  const rawContent = completion.content[0];
-  if (rawContent.type !== "text") {
-    console.error("[llm] unexpected content type:", rawContent.type);
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Ollama request failed (${response.status}): ${errorText}`);
+  }
+
+  const completion = (await response.json()) as {
+    message?: {
+      content?: string;
+    };
+  };
+
+  const rawText = completion.message?.content;
+
+  if (typeof rawText !== "string" || rawText.trim().length === 0) {
+    console.error("[llm] empty response from Ollama:", completion);
     return DEFAULT_RESPONSE;
   }
 
-  const rawText = rawContent.text;
-
-  // Try to parse
   const parsed = extractJSON(rawText);
 
   if (parsed === null) {
