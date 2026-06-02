@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-red-primary: #DC2626;
+  --color-red-hover: #B91C1C;
+  --font-sans: 'Inter', system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: Inter, system-ui, sans-serif;
+  background: #F9FAFB;
+  color: #111827;
+  margin: 0;
+}
