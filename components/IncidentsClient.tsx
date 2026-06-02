@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 interface Incident {
   incidentId: string;
@@ -74,12 +75,21 @@ export default function IncidentsClient() {
                     {inc.category || "General"}
                   </span>
                 </div>
-                <div className="text-xs text-gray-400 shrink-0" data-testid="incident-date">
-                  {new Date(inc.createdAt).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className="text-xs text-gray-400" data-testid="incident-date">
+                    {new Date(inc.createdAt).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </span>
+                  <Link
+                    href={`/incidents/${inc.incidentId}`}
+                    className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors"
+                    data-testid={`incident-view-btn-${inc.incidentId}`}
+                  >
+                    View
+                  </Link>
                 </div>
               </div>
             ))}
