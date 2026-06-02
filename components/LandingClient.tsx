@@ -77,6 +77,16 @@ function VDIIcon() {
   );
 }
 
+function ScannerIcon() {
+  return (
+    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      <rect x="4" y="8" width="16" height="20" rx="2" stroke="#CC0000" strokeWidth="1.8" fill="none" />
+      <path d="M8 14h8M8 18h8M8 22h5" stroke="#CC0000" strokeWidth="1.4" strokeLinecap="round" />
+      <path d="M22 6v20M25 6v20M28 8v16" stroke="#CC0000" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 // ─── Escalation Summary Card ─────────────────────────────────────────────────
 
 interface EscalationSummaryCardProps {
@@ -345,6 +355,7 @@ export default function LandingClient() {
 
   const [user, setUser] = useState<SessionUser | null>(null);
   const [kbStatus, setKBStatus] = useState<KBStatus>("loading");
+  const [scannerKbStatus, setScannerKbStatus] = useState<KBStatus>("loading");
   const [chatStarted, setChatStarted] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -397,6 +408,13 @@ export default function LandingClient() {
         setKBStatus(data?.available ? "available" : "missing");
       })
       .catch(() => setKBStatus("missing"));
+
+    fetch("/api/kb/status?category=scanner")
+      .then((r) => r.ok ? r.json() : null)
+      .then((data: { available: boolean } | null) => {
+        setScannerKbStatus(data?.available ? "available" : "missing");
+      })
+      .catch(() => setScannerKbStatus("missing"));
   }, []);
 
   useEffect(() => {
@@ -717,8 +735,8 @@ export default function LandingClient() {
               </p>
             </div>
 
-            {/* VDI Tile */}
-            <div className="w-full flex justify-center" data-testid="tiles-section">
+            {/* Category Tiles */}
+            <div className="w-full flex justify-center gap-4" data-testid="tiles-section">
               <button
                 className="group flex flex-col items-center gap-3 p-8 rounded-2xl bg-white border border-gray-200 shadow-sm hover:shadow-md hover:border-[#CC0000]/30 hover:-translate-y-0.5 transition-all cursor-pointer"
                 style={{ width: "180px" }}
@@ -738,6 +756,28 @@ export default function LandingClient() {
                   data-testid="vdi-kb-badge"
                 >
                   {kbStatus === "loading" ? "Checking KB…" : kbStatus === "available" ? "KB Available" : "KB Missing"}
+                </span>
+              </button>
+
+              <button
+                className="group flex flex-col items-center gap-3 p-8 rounded-2xl bg-white border border-gray-200 shadow-sm hover:shadow-md hover:border-[#CC0000]/30 hover:-translate-y-0.5 transition-all cursor-pointer"
+                style={{ width: "180px" }}
+                onClick={() => sendMessage("I have a problem with my Scanner", "scanner")}
+                data-testid="scanner-tile"
+              >
+                <ScannerIcon />
+                <span className="text-sm font-medium text-gray-800" data-testid="scanner-tile-label">Scanner</span>
+                <span
+                  className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${
+                    scannerKbStatus === "available"
+                      ? "bg-green-100 text-green-700"
+                      : scannerKbStatus === "missing"
+                      ? "bg-red-50 text-red-500"
+                      : "bg-gray-100 text-gray-400"
+                  }`}
+                  data-testid="scanner-kb-badge"
+                >
+                  {scannerKbStatus === "loading" ? "Checking KB…" : scannerKbStatus === "available" ? "KB Available" : "KB Missing"}
                 </span>
               </button>
             </div>
